@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AskTheBook — App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+
+    <header>
+        <a href="index.html" class="logo" style="text-decoration:none">
+            <div class="logo-dot"></div>
+            AskTheBook
+        </a>
+    </header>
+
+    <div class="app">
+
+        <!-- ── Sidebar ── -->
+        <aside class="sidebar">
+
+            <!-- Upload panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">📄</span>
+                    <span class="panel-title">Course Material</span>
+                </div>
+                <label class="upload-zone" for="file-upload">
+                    <input type="file" id="file-upload" accept=".pdf,.docx">
+                    <div class="upload-ring">📚</div>
+                    <div class="upload-text">
+                        <strong>Drop your document</strong>
+                        <span>PDF or DOCX accepted</span>
+                    </div>
+                    <div class="upload-btn-fake">Browse Files</div>
+                </label>
+                <div id="upload-status"></div>
+            </div>
+
+            <!-- Doc list panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">🗂</span>
+                    <span class="panel-title">Your Library</span>
+                </div>
+                <div id="doc-list">
+                    <div class="doc-empty">No documents indexed yet</div>
+                </div>
+            </div>
+
+            <!-- Mode panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-icon">⚙︎</span>
+                    <span class="panel-title">Response Mode</span>
+                </div>
+                <div class="mode-list">
+                    <div class="mode-item active" data-mode="normal" data-label="Standard">
+                        <span class="mode-emoji">💬</span>
+                        <div class="mode-info">
+                            <div class="mode-name">Standard</div>
+                            <div class="mode-desc">Direct answers from your docs</div>
+                        </div>
+                    </div>
+                    <div class="mode-item" data-mode="eli5" data-label="ELI5 + Technical">
+                        <span class="mode-emoji">🧸</span>
+                        <div class="mode-info">
+                            <div class="mode-name">ELI5 Mode</div>
+                            <div class="mode-desc">Simple + academic dual answer</div>
+                        </div>
+                    </div>
+                    <div class="mode-item" data-mode="socratic" data-label="Study Buddy">
+                        <span class="mode-emoji">🦉</span>
+                        <div class="mode-info">
+                            <div class="mode-name">Study Buddy</div>
+                            <div class="mode-desc">Guided Socratic questions</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mode-divider"></div>
+                <button class="exam-btn" onclick="generateExam()">
+                    ✦ &nbsp;Predict Exam Questions
+                </button>
+            </div>
+
+        </aside>
+
+        <!-- ── Chat ── -->
+        <main class="chat-area">
+            <div class="chat-topbar">
+                <div class="chat-mode-label">
+                    <span style="font-size:0.8rem; color:var(--muted)">Mode:</span>
+                    <span class="chat-mode-badge" id="mode-badge">Standard</span>
+                </div>
+                <button id="clear-chat-btn" class="clear-btn">Clear</button>
+            </div>
+
+            <div class="messages" id="messages">
+                <div class="msg ai welcome-msg">
+                    <div class="msg-avatar">A</div>
+                    <div class="msg-body">
+                        <div class="msg-bubble">
+                            Welcome. Upload a document on the left, then ask me anything about it. I'll answer strictly
+                            from your material — no hallucinations, always cited.
+                            <br><br>
+                            Switch modes to get ELI5 explanations, Socratic guidance, or exam predictions.
+                        </div>
+                        <div class="msg-meta">AskTheBook · ready</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-zone">
+                <div class="input-row">
+                    <textarea id="query-input" placeholder="Ask a question about your document…" rows="1"
+                        onkeydown="handleKey(event)"></textarea>
+                    <button id="send-btn" onclick="sendMessage()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span class="input-hint">⌘+Enter or click send</span>
+                    <span class="input-hint" id="char-count" style="display:none"></span>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
