@@ -1,41 +1,48 @@
-import shutil
+import io
 import os
-from typing import List
-from fastapi import UploadFile
 import chromadb
-from chromadb.utils import embedding_functions
+from fastapi import HTTPException
 from pypdf import PdfReader
 from docx import Document
 
 # Persistent client — survives server restarts
 chroma_client = chromadb.PersistentClient(path="./chroma_db")
 
-# Get or create collection
-try:
-    collection = chroma_client.get_collection(name="course_materials")
-except:
-    collection = chroma_client.create_collection(name="course_materials")
+# Use a helper function to get the collection
+# This ensures we always get a fresh reference, which helps avoid errors if the collection is reset
+def get_collection():
+    try:
+        return chroma_client.get_collection(name="course_materials")
+    except Exception:
+        return chroma_client.create_collection(name="course_materials")
+
 
 def get_indexed_documents() -> list[str]:
     """Returns a list of unique source filenames currently indexed."""
     try:
+        collection = get_collection()
         results = collection.get(include=["metadatas"])
         sources = list({m["source"] for m in results["metadatas"]})
         return sources
-    except:
+    except Exception:
         return []
+
 
 def is_collection_empty() -> bool:
     try:
-        return collection.count() == 0
-    except:
+        return get_collection().count() == 0
+    except Exception:
         return True
 
-async def ingest_document(file: UploadFile):
+
+async def ingest_document(original_filename: str, contents: bytes):
     """
-    Reads a PDF or DOCX, chunks it with overlap, and stores in ChromaDB.
+    Reads a PDF or DOCX from bytes, chunks it with overlap, and stores in ChromaDB.
     Enforces SINGLE DOCUMENT POLICY: Clears existing DB before adding new file.
     """
+    # Sanitize the filename to ensure it's safe to use
+    safe_filename = os.path.basename(original_filename)
+
     # ── SINGLE DOC POLICY ──
     try:
         clear_database()
@@ -43,20 +50,16 @@ async def ingest_document(file: UploadFile):
         print(f"Warning: Could not clear database: {e}")
 
     content = ""
-    file_location = f"temp_{file.filename}"
-
-    with open(file_location, "wb+") as file_object:
-        shutil.copyfileobj(file.file, file_object)
 
     try:
-        if file.filename.endswith(".pdf"):
-            reader = PdfReader(file_location)
+        if safe_filename.endswith(".pdf"):
+            reader = PdfReader(io.BytesIO(contents))
             for page in reader.pages:
                 text = page.extract_text()
                 if text:
                     content += text + "\n"
-        elif file.filename.endswith(".docx"):
-            doc = Document(file_location)
+        elif safe_filename.endswith(".docx"):
+            doc = Document(io.BytesIO(contents))
             for para in doc.paragraphs:
                 content += para.text + "\n"
 
@@ -70,10 +73,13 @@ async def ingest_document(file: UploadFile):
             chunks.append(content[start:end])
             start += chunk_size - overlap
 
-        # (No need to remove existing chunks for *this* file, as we cleared everything)
+        ids = [f"{safe_filename}_{i}" for i in range(len(chunks))]
+        metadatas = [{"source": safe_filename, "chunk_id": i} for i in range(len(chunks))]
 
-        ids = [f"{file.filename}_{i}" for i in range(len(chunks))]
-        metadatas = [{"source": file.filename, "chunk_id": i} for i in range(len(chunks))]
+        collection = get_collection()
+
+        if not chunks:
+            raise HTTPException(status_code=422, detail="Could not extract text from this PDF. It may be a scanned image.")
 
         collection.add(
             documents=chunks,
@@ -84,12 +90,11 @@ async def ingest_document(file: UploadFile):
         return {
             "status": "success",
             "chunks_processed": len(chunks),
-            "filename": file.filename
+            "filename": safe_filename
         }
 
-    finally:
-        if os.path.exists(file_location):
-            os.remove(file_location)
+    except Exception as e:
+        raise
 
 
 async def query_documents(query: str, n_results: int = 3):
@@ -100,7 +105,7 @@ async def query_documents(query: str, n_results: int = 3):
     if is_collection_empty():
         return "", []
 
-    # n_results can't exceed collection size
+    collection = get_collection()
     count = collection.count()
     n = min(n_results, count)
 
@@ -110,14 +115,15 @@ async def query_documents(query: str, n_results: int = 3):
     )
 
     context = ""
+    # We include the chunk ID in the source so users know exactly which part of the document was used
     sources = []
     if results["documents"]:
         for i, doc in enumerate(results["documents"][0]):
             meta = results["metadatas"][0][i]
-            context += f"Source ({meta['source']}):\n{doc}\n\n"
-            sources.append(meta["source"])
+            context += f"Source ({meta['source']}, chunk {meta['chunk_id']}):\n{doc}\n\n"
+            sources.append(f"{meta['source']} §{meta['chunk_id']}")
 
-    return context, list(set(sources))
+    return context, list(dict.fromkeys(sources))  # deduplicate preserving order
 
 
 def delete_document(filename: str) -> bool:
@@ -126,7 +132,7 @@ def delete_document(filename: str) -> bool:
     Returns True if successful, False otherwise.
     """
     try:
-        # Find all chunks for this source
+        collection = get_collection()
         results = collection.get(where={"source": filename})
         if results["ids"]:
             collection.delete(ids=results["ids"])
@@ -140,9 +146,8 @@ def delete_document(filename: str) -> bool:
 def clear_database():
     """Wipes the entire collection to enforce single-document policy."""
     try:
-        # Check if collection exists and has items
+        collection = get_collection()
         if collection.count() > 0:
-            # Delete all items
             all_ids = collection.get()['ids']
             if all_ids:
                 collection.delete(ids=all_ids)

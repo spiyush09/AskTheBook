@@ -6,10 +6,13 @@ from backend.core.config import settings
 from backend.core.rag import ingest_document, query_documents, get_indexed_documents, is_collection_empty, delete_document
 from backend.services.features import get_standard_answer, get_eli5_answer, get_socratic_tutor, predict_exam_questions
 
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
+
 app = FastAPI(title="AskTheBook")
 
 app.add_middleware(
     CORSMiddleware,
+    # Allow requests only from the local frontend for security
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
@@ -34,33 +37,41 @@ async def get_documents():
 async def upload_file(file: UploadFile = File(...)):
     if not (file.filename.endswith(".pdf") or file.filename.endswith(".docx")):
         raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported.")
+
+    # Limit file size to 20MB to prevent overloading the server
+    # Read content once, check size, then process
+    contents = await file.read()
+    if len(contents) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 20MB.")
+
     try:
-        result = await ingest_document(file)
+        result = await ingest_document(file.filename, contents)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/api/documents/{filename}")
+# Delete a document by its filename
+# The :path parameter allows filenames with slashes or dots to be handled correctly
+@app.delete("/api/documents/{filename:path}")
 async def delete_document_endpoint(filename: str):
-    # Determine if synchronous or asynchronous
-    # content is available
-    if await is_collection_empty():
-         raise HTTPException(status_code=404, detail="No documents found")
-    
-    # Since delete_document is sync, run it directly or in threadpool if needed
-    # For now assuming simple sync execution is fine for this lightweight op
+    # Check if we have any documents before trying to delete
+    if is_collection_empty():
+        raise HTTPException(status_code=404, detail="No documents found")
+
     try:
         success = delete_document(filename)
         if success:
             return {"status": "success", "message": f"Deleted {filename}"}
         else:
-             raise HTTPException(status_code=404, detail="Document not found")
+            raise HTTPException(status_code=404, detail="Document not found")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
-    # Guard: no documents uploaded yet
+    # Ensure a document is uploaded before allowing chat
     if is_collection_empty():
         return {
             "answer": "No documents are indexed yet. Please upload a PDF or DOCX file first.",
@@ -84,7 +95,8 @@ async def chat_endpoint(request: ChatRequest):
 
     return {"answer": response, "sources": sources}
 
-@app.post("/api/exam")
+# Generate example exam questions based on the document content
+@app.get("/api/exam")
 async def exam_endpoint():
     if is_collection_empty():
         return {"questions": "No documents indexed yet. Please upload a file first."}

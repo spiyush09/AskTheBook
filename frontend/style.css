@@ -1,6 +1,5 @@
 :root {
     --black: #080808;
-    --obsidian: #0e0e0e;
     --void: #141414;
     --surface: #1a1a1a;
     --raised: #212121;
@@ -25,6 +24,8 @@
 
 html {
     scroll-behavior: smooth;
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
@@ -32,8 +33,8 @@ body {
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
     font-weight: 300;
-    min-height: 100vh;
-    overflow-x: hidden;
+    height: 100%;
+    overflow: hidden;
 }
 
 /* ── Noise overlay ── */
@@ -92,7 +93,6 @@ header {
 .logo {
     font-family: 'Playfair Display', serif;
     font-size: 1.5rem;
-    /* Fix: increased from 1.25rem */
     font-weight: 700;
     color: var(--amber);
     letter-spacing: 0.02em;
@@ -103,9 +103,7 @@ header {
 
 .logo-dot {
     width: 9px;
-    /* Fix: increased from 7px */
     height: 9px;
-    /* Fix: increased from 7px */
     background: var(--amber);
     border-radius: 50%;
     box-shadow: 0 0 10px var(--amber);
@@ -126,31 +124,18 @@ header {
     }
 }
 
-.header-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    border: 1px solid var(--border);
-    padding: 0.3rem 0.75rem;
-    border-radius: 2px;
-}
-
 /* ── Layout ── */
 .app {
     position: relative;
     z-index: 1;
     max-width: 100%;
-    /* Fix: changed from 1100px */
-    margin: 0 auto;
-    padding: 72px 1.25rem 0;
-    /* Fix: changed from 100px 2rem 4rem */
+    margin-top: 64px;
+    padding: 0.75rem 1.25rem 0;
     display: grid;
     grid-template-columns: 320px 1fr;
-    /* Fix: changed from 300px 1fr */
     gap: 1.5rem;
-    min-height: 100vh;
+    height: calc(100vh - 64px);
+    overflow: hidden;
 }
 
 /* ── Sidebar ── */
@@ -158,6 +143,13 @@ header {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    overflow-y: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: none;
+}
+
+.sidebar::-webkit-scrollbar {
+    display: none;
 }
 
 .panel {
@@ -188,13 +180,13 @@ header {
     opacity: 0.7;
 }
 
-/* Upload */
+/* ── Upload ── */
 .upload-zone {
-    padding: 1.5rem 1.25rem;
+    padding: 0.75rem 1.25rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     cursor: pointer;
     transition: background 0.2s;
     position: relative;
@@ -218,7 +210,6 @@ header {
     justify-content: center;
     font-size: 1.4rem;
     transition: all 0.3s;
-    position: relative;
 }
 
 .upload-zone:hover .upload-ring {
@@ -253,12 +244,6 @@ header {
     padding: 0.5rem 1.2rem;
     border-radius: 2px;
     background: var(--amber-trace);
-    transition: all 0.2s;
-}
-
-.upload-zone:hover .upload-btn-fake {
-    background: var(--amber-glow);
-    border-color: var(--amber);
 }
 
 #upload-status {
@@ -269,6 +254,10 @@ header {
     min-height: 1.2rem;
 }
 
+#upload-status.uploading {
+    color: var(--muted);
+}
+
 #upload-status.success {
     color: #6fcf7a;
 }
@@ -277,7 +266,7 @@ header {
     color: #e07070;
 }
 
-/* Mode selector */
+/* ── Mode selector ── */
 .mode-list {
     padding: 0.5rem;
     display: flex;
@@ -345,7 +334,6 @@ header {
     color: var(--amber);
 }
 
-/* Divider mode */
 .mode-divider {
     height: 1px;
     background: var(--border);
@@ -356,16 +344,12 @@ header {
 .chat-area {
     display: flex;
     flex-direction: column;
-    gap: 0;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 4px;
     overflow: hidden;
-    height: calc(100vh - 80px);
-    /* Fix: changed from 130px */
-    position: sticky;
-    top: 72px;
-    /* Fix: changed from 80px */
+    height: 100%;
+    position: relative;
 }
 
 .chat-topbar {
@@ -396,13 +380,7 @@ header {
     border-radius: 2px;
 }
 
-.chat-hint {
-    font-size: 0.72rem;
-    color: var(--faint);
-    font-family: 'DM Mono', monospace;
-}
-
-/* Messages */
+/* ── Messages ── */
 .messages {
     flex: 1;
     overflow-y: auto;
@@ -412,7 +390,7 @@ header {
     gap: 1.25rem;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
-    justify-content: flex-end;
+    justify-content: flex-start;
 }
 
 .messages::-webkit-scrollbar {
@@ -452,9 +430,7 @@ header {
 
 .msg-avatar {
     width: 36px;
-    /* Fix: increased from 30px */
     height: 36px;
-    /* Fix: increased from 30px */
     border-radius: 3px;
     display: flex;
     align-items: center;
@@ -470,7 +446,6 @@ header {
     color: var(--amber);
     font-family: 'Playfair Display', serif;
     font-size: 0.9rem;
-    /* Fix: increased from 0.75rem */
     font-weight: 700;
 }
 
@@ -572,7 +547,7 @@ header {
     color: var(--amber);
 }
 
-/* System message */
+/* ── System message ── */
 .msg.system {
     justify-content: center;
 }
@@ -588,7 +563,13 @@ header {
     border-radius: 2px;
 }
 
-/* Loading dots */
+/* ── Welcome message ── */
+.welcome-msg .msg-bubble {
+    background: linear-gradient(135deg, var(--void) 0%, rgba(245, 166, 35, 0.04) 100%);
+    border-color: var(--border-hi);
+}
+
+/* ── Loading dots ── */
 .loading-dots {
     display: flex;
     gap: 5px;
@@ -627,7 +608,7 @@ header {
     }
 }
 
-/* Input zone */
+/* ── Input zone ── */
 .input-zone {
     padding: 1rem 1.25rem;
     border-top: 1px solid var(--border);
@@ -706,7 +687,7 @@ header {
     font-family: 'DM Mono', monospace;
 }
 
-/* Exam btn in sidebar */
+/* ── Exam button ── */
 .exam-btn {
     margin: 0 1rem 1rem;
     display: flex;
@@ -733,26 +714,29 @@ header {
     background: var(--amber-trace);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .app {
-        grid-template-columns: 1fr;
-        padding: 80px 1rem 2rem;
-    }
-
-    .chat-area {
-        height: 70vh;
-        position: static;
-    }
-
-    header {
-        padding: 0 1.25rem;
-    }
+.exam-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
-/* Welcome message fancy */
-.welcome-msg .msg-bubble {
-    background: linear-gradient(135deg, var(--void) 0%, rgba(245, 166, 35, 0.04) 100%);
+/* ── Clear chat button ── */
+.clear-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.75rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clear-btn:hover {
+    color: var(--text);
     border-color: var(--border-hi);
 }
 
@@ -776,11 +760,18 @@ header {
 .doc-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.6rem;
     padding: 0.5rem 0.75rem;
     border-radius: 3px;
     background: var(--raised);
     border: 1px solid var(--border);
+}
+
+.doc-info {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
 }
 
 .doc-ext {
@@ -801,42 +792,33 @@ header {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 140px;
 }
 
-/* ── Clear chat button ── */
-.clear-btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
+.doc-delete-btn {
     background: transparent;
     border: 1px solid var(--border);
-    padding: 0.3rem 0.75rem;
-    border-radius: 2px;
+    color: var(--muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
     cursor: pointer;
     transition: all 0.2s;
+    padding-bottom: 2px;
 }
 
-.clear-btn:hover {
-    color: var(--text);
-    border-color: var(--border-hi);
-}
-
-/* ── Upload status states ── */
-#upload-status.uploading {
-    color: var(--muted);
-}
-
-#upload-status.success {
-    color: #6fcf7a;
-}
-
-#upload-status.error {
+.doc-delete-btn:hover {
     color: #e07070;
+    border-color: #e07070;
+    background: rgba(224, 112, 112, 0.1);
 }
 
-/* ── Hero Section ── */
+/* ── Hero section ── */
 .hero {
     position: relative;
     min-height: 100vh;
@@ -973,10 +955,10 @@ header {
 
 .hero-steps {
     display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
+    flex-direction: row;
+    gap: 1.5rem;
     width: 100%;
-    margin-top: 0.5rem;
+    margin-top: 0;
     animation: h-up 0.5s ease 0.4s both;
 }
 
@@ -996,46 +978,6 @@ header {
 .hero-step:hover {
     border-color: var(--amber-dim);
     transform: translateY(-2px);
-}
-
-
-/* ── Doc item update ── */
-.doc-item {
-    justify-content: space-between;
-}
-
-.doc-info {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.doc-name {
-    max-width: 140px;
-    /* Reduced to prevent overlap */
-}
-
-.doc-delete-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    line-height: 1;
-    cursor: pointer;
-    transition: all 0.2s;
-    padding-bottom: 2px;
-}
-
-.doc-delete-btn:hover {
-    color: #e07070;
-    border-color: #e07070;
-    background: rgba(224, 112, 112, 0.1);
 }
 
 .hero-step-n {
@@ -1061,52 +1003,6 @@ header {
     line-height: 1.5;
 }
 
-/* Removed separators as requested */
-
-.hero-steps {
-    margin-top: 0;
-    /* Changed from 0.5rem or default */
-}
-
-.hero-scroll {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.4rem;
-    animation: h-up 0.5s ease 0.8s both;
-}
-
-.hero-scroll span {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.58rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--faint);
-}
-
-.hero-scroll-line {
-    width: 1px;
-    height: 36px;
-    background: linear-gradient(to bottom, var(--amber-dim), transparent);
-    animation: h-scroll-pulse 2s ease-in-out infinite;
-}
-
-@keyframes h-scroll-pulse {
-
-    0%,
-    100% {
-        opacity: 0.3;
-    }
-
-    50% {
-        opacity: 1;
-    }
-}
-
 @keyframes h-up {
     from {
         opacity: 0;
@@ -1119,7 +1015,38 @@ header {
     }
 }
 
+/* ── Responsive ── */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .app {
+        grid-template-columns: 240px 1fr;
+        gap: 1rem;
+        padding: 72px 1rem 0;
+    }
+
+    .doc-name {
+        max-width: 110px;
+    }
+
+    .mode-desc {
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
+    .app {
+        grid-template-columns: 1fr;
+        padding: 80px 1rem 2rem;
+    }
+
+    .chat-area {
+        height: 70vh;
+        position: static;
+    }
+
+    header {
+        padding: 0 1.25rem;
+    }
+
     .hero-steps {
         flex-direction: column;
     }

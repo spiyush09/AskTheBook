@@ -9,7 +9,7 @@ async def get_standard_answer(query: str, context: str):
     Student Question:
     {query}
     """
-    return await generate_response(prompt, context)
+    return await generate_response(query, prompt, context)
 
 async def get_eli5_answer(query: str, context: str):
     prompt = f"""
@@ -27,12 +27,12 @@ async def get_eli5_answer(query: str, context: str):
     [ELI5]
     The same idea explained as a simple analogy a 10-year-old could understand. No jargon.
     """
-    return await generate_response(prompt, context)
+    return await generate_response(query, prompt, context)
 
 async def get_socratic_tutor(query: str, context: str):
     prompt = f"""
     You are a warm, encouraging teacher guiding a student through Socratic dialogue.
-    
+
     Your behaviour rules:
     - If this is the FIRST message (no [Student Answer] present), ask ONE simple foundational question based on the context that nudges the student toward the answer. Never answer directly.
     - If a [Student Answer] is present, first tell the student whether they are correct, partially correct, or on the wrong track — in one sentence, warmly. Then either ask the next logical follow-up question if they need more guidance, or confirm they have fully arrived at the answer and summarise it clearly.
@@ -44,7 +44,7 @@ async def get_socratic_tutor(query: str, context: str):
     Student Question:
     {query}
     """
-    return await generate_response(prompt, context)
+    return await generate_response(query, prompt, context)
 
 async def predict_exam_questions(context: str):
     prompt = f"""
@@ -61,4 +61,5 @@ async def predict_exam_questions(context: str):
 
     Do not add any preamble or explanation outside this format.
     """
-    return await generate_response(prompt, context)
+    # No user query for exam prediction — use a fixed key string
+    return await generate_response("__exam_predict__", prompt, context)
