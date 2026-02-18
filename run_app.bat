@@ -1,5 +1,5 @@
 @echo off
-echo Starting EduRAG Assistant...
+echo Starting AskTheBook(EduRAG Assistant)...
 echo Please ensure you have added your API KEY to .env file!
 echo.
 pip install -r requirements.txt

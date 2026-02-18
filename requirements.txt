@@ -2,8 +2,6 @@ fastapi
 uvicorn
 python-multipart
 chromadb
-langchain
-langchain-community
 pypdf
 python-docx
 python-dotenv
