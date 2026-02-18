@@ -6,8 +6,9 @@ from pypdf import PdfReader
 from docx import Document
 
 # Persistent client — survives server restarts
-chroma_client = chromadb.PersistentClient(path="./chroma_db")
-
+chroma_client = chromadb.PersistentClient(
+    path=os.environ.get("CHROMA_PATH", "./chroma_db")
+)
 # Use a helper function to get the collection
 # This ensures we always get a fresh reference, which helps avoid errors if the collection is reset
 def get_collection():
