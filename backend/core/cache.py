@@ -6,8 +6,7 @@ CACHE_FILE = "response_cache.json"
 MAX_CACHE_ENTRIES = 500
 EVICT_COUNT = 100  # how many to drop when limit hit
 
-# Include the query text in the key to prevent collisions
-# This ensures that if the same context is queried with different questions, we don't return the wrong cached answer
+# query is included in the key so two different questions on the same document don't collide
 def get_cache_key(query: str, prompt: str, context: str, model: str) -> str:
     """Generate a unique key for the request."""
     raw = f"{query}|{prompt}|{context}|{model}"
@@ -38,7 +37,7 @@ def get_cached_response(query: str, prompt: str, context: str, model: str):
 def set_cached_response(query: str, prompt: str, context: str, model: str, response: str):
     global _memory_cache
 
-    # Evict the oldest entries if the cache grows too large
+    # evict oldest entries when the limit is hit
     if len(_memory_cache) >= MAX_CACHE_ENTRIES:
         keys_to_delete = list(_memory_cache.keys())[:EVICT_COUNT]
         for k in keys_to_delete:

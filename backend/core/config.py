@@ -10,7 +10,7 @@ class Settings:
 
 settings = Settings()
 
-# Validate keys at startup so missing config is obvious immediately
+# validate at startup so missing keys don't cause silent failures later
 def validate_settings():
     missing = []
     if not settings.GROQ_API_KEY:

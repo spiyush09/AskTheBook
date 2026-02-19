@@ -23,7 +23,7 @@ if (!messagesEl) {
 }
 
 function init() {
-    // ── Auto-resize textarea ──
+    // grow the textarea as the user types, up to a max height
     if (queryInput) {
         queryInput.addEventListener('input', () => {
             queryInput.style.height = 'auto';
@@ -31,7 +31,7 @@ function init() {
         });
     }
 
-    // ── On page load: fetch already-indexed documents ──
+    // populate the document list with whatever is already indexed
     fetchDocuments();
 
     // ── Mode switching ──

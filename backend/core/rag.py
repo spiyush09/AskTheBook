@@ -5,12 +5,11 @@ from fastapi import HTTPException
 from pypdf import PdfReader
 from docx import Document
 
-# Persistent client — survives server restarts
+# persistent client so the index survives server restarts
 chroma_client = chromadb.PersistentClient(
     path=os.environ.get("CHROMA_PATH", "./chroma_db")
 )
-# Use a helper function to get the collection
-# This ensures we always get a fresh reference, which helps avoid errors if the collection is reset
+# helper to always get a fresh collection reference, avoids stale state issues
 def get_collection():
     try:
         return chroma_client.get_collection(name="course_materials")
@@ -41,10 +40,10 @@ async def ingest_document(original_filename: str, contents: bytes):
     Reads a PDF or DOCX from bytes, chunks it with overlap, and stores in ChromaDB.
     Enforces SINGLE DOCUMENT POLICY: Clears existing DB before adding new file.
     """
-    # Sanitize the filename to ensure it's safe to use
+    # strip any path components from the filename before using it
     safe_filename = os.path.basename(original_filename)
 
-    # ── SINGLE DOC POLICY ──
+    # clear the database before ingesting — only one document at a time
     try:
         clear_database()
     except Exception as e:
@@ -64,7 +63,7 @@ async def ingest_document(original_filename: str, contents: bytes):
             for para in doc.paragraphs:
                 content += para.text + "\n"
 
-        # Chunking with overlap
+        # overlap between chunks so concepts that span a boundary don't get cut off
         chunk_size = 1000
         overlap = 200
         chunks = []
@@ -116,7 +115,7 @@ async def query_documents(query: str, n_results: int = 3):
     )
 
     context = ""
-    # We include the chunk ID in the source so users know exactly which part of the document was used
+    # chunk ID in the source so the user can trace exactly where the answer came from
     sources = []
     if results["documents"]:
         for i, doc in enumerate(results["documents"][0]):
