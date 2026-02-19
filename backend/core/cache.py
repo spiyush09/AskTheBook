@@ -6,7 +6,7 @@ CACHE_FILE = "response_cache.json"
 MAX_CACHE_ENTRIES = 500
 EVICT_COUNT = 100  # how many to drop when limit hit
 
-# query is included in the key so two different questions on the same document don't collide
+# including query in the hash so same doc + different question = different key
 def get_cache_key(query: str, prompt: str, context: str, model: str) -> str:
     """Generate a unique key for the request."""
     raw = f"{query}|{prompt}|{context}|{model}"

@@ -12,7 +12,7 @@ app = FastAPI(title="AskTheBook")
 
 app.add_middleware(
     CORSMiddleware,
-    # Allow requests only from the local frontend for security
+    # open for now, lock this down if deploying properly
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
@@ -51,10 +51,10 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Delete a document by its filename
-# The :path parameter allows filenames with slashes or dots to be handled correctly
+# :path so filenames with dots don't get cut off
 @app.delete("/api/documents/{filename:path}")
 async def delete_document_endpoint(filename: str):
-    # Check if we have any documents before trying to delete
+    # nothing to delete
     if is_collection_empty():
         raise HTTPException(status_code=404, detail="No documents found")
 
@@ -71,7 +71,7 @@ async def delete_document_endpoint(filename: str):
 
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
-    # Ensure a document is uploaded before allowing chat
+    # nothing to query if db is empty
     if is_collection_empty():
         return {
             "answer": "No documents are indexed yet. Please upload a PDF or DOCX file first.",
@@ -95,7 +95,6 @@ async def chat_endpoint(request: ChatRequest):
 
     return {"answer": response, "sources": sources}
 
-# Generate example exam questions based on the document content
 @app.get("/api/exam")
 async def exam_endpoint():
     if is_collection_empty():

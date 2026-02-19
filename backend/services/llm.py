@@ -11,7 +11,7 @@ async def generate_response(query: str, prompt: str, context: str, model: str = 
     3. Generate the final answer using the Groq API.
     """
     # 1. Check the Cache first to save time and cost
-    # We use the query, prompt, context, and model to create a unique key
+    
     cached = get_cached_response(query, prompt, context, model)
     if cached:
         print("Returning cached response")

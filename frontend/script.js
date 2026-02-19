@@ -31,7 +31,6 @@ function init() {
         });
     }
 
-    // populate the document list with whatever is already indexed
     fetchDocuments();
 
     // ── Mode switching ──
@@ -54,7 +53,7 @@ function init() {
         clearChatBtn.addEventListener('click', () => {
             socraticHistory = [];
             messagesEl.innerHTML = '';
-            // Restore variable welcome message after clearing the chat
+            // re-add the welcome message
             addWelcomeMessage();
             addSystem('Chat cleared');
         });
@@ -93,7 +92,7 @@ function init() {
                     uploadStatus.textContent = `✓ ${data.chunks_processed} chunks indexed`;
                     addSystem(`<strong>${file.name}</strong> is ready — ${data.chunks_processed} chunks indexed. Ask me anything.`);
                     fetchDocuments();
-                    socraticHistory = []; // Reset Socratic history on new doc
+                    socraticHistory = []; /// clear history on mode switch
                 } else {
                     throw new Error(data.detail || 'Upload failed');
                 }
@@ -159,7 +158,6 @@ function renderDocList(docs) {
         deleteBtn.className = 'doc-delete-btn';
         deleteBtn.title = 'Delete file';
         deleteBtn.textContent = '×';
-        // Safe: no inline onclick, no string injection
         deleteBtn.addEventListener('click', () => deleteDocument(name));
 
         el.appendChild(info);
@@ -168,8 +166,7 @@ function renderDocList(docs) {
     });
 }
 
-// Delete the document by calling the backend API
-// We encode the filename to handle special characters (like spaces or dots) correctly
+// encodeURIComponent handles filenames with spaces etc
 async function deleteDocument(filename) {
     if (!confirm(`Are you sure you want to delete "${filename}"?`)) return;
 
@@ -308,8 +305,7 @@ async function sendMessage() {
     queryInput.style.height = 'auto';
     addLoading();
 
-    // For Socratic mode, we need to send the previous conversation history
-    // This gives the AI context so it knows what question it asked previously
+    // attach previous turns so the AI knows what it already asked
     let queryToSend = text;
     if (currentMode === 'socratic' && socraticHistory.length > 0) {
         const historyBlock = socraticHistory
@@ -350,7 +346,7 @@ async function sendMessage() {
 
 // ── Exam predictor ──
 // Call the Exam Predictor API to generate practice questions
-// We disable the button while loading to prevent multiple clicks
+// prevent double clicks
 async function generateExam() {
     if (examBtn) examBtn.disabled = true;
     addSystem('Generating exam predictions from your material…');

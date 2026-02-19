@@ -61,5 +61,5 @@ async def predict_exam_questions(context: str):
 
     Do not add any preamble or explanation outside this format.
     """
-    # No user query for exam prediction — use a fixed key string
+    # fixed string since there's no real user query here
     return await generate_response("__exam_predict__", prompt, context)

@@ -9,7 +9,7 @@ from docx import Document
 chroma_client = chromadb.PersistentClient(
     path=os.environ.get("CHROMA_PATH", "./chroma_db")
 )
-# helper to always get a fresh collection reference, avoids stale state issues
+# always fetch fresh so we don't use a stale reference after a reset
 def get_collection():
     try:
         return chroma_client.get_collection(name="course_materials")
@@ -40,7 +40,7 @@ async def ingest_document(original_filename: str, contents: bytes):
     Reads a PDF or DOCX from bytes, chunks it with overlap, and stores in ChromaDB.
     Enforces SINGLE DOCUMENT POLICY: Clears existing DB before adding new file.
     """
-    # strip any path components from the filename before using it
+    # os.path.basename strips any path the client might send
     safe_filename = os.path.basename(original_filename)
 
     # clear the database before ingesting — only one document at a time
