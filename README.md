@@ -4,6 +4,17 @@ A RAG-based study tool I built as a practical challenge in the GenAI4GenZ progra
 
 The idea was simple: instead of asking an AI that knows everything, ask one that only knows your material.
 
+## Screenshots
+
+**Landing page**
+<img width="1920" height="1080" alt="Landing page" src="https://github.com/user-attachments/assets/2d8d6771-388c-4166-ab04-ba63955a7fdb" />
+
+**ELI5 mode — technical and simplified answer side by side**
+<img width="1920" height="1080" alt="ELI5 mode — technical and simplified answer side by side" src="https://github.com/user-attachments/assets/cd6301fe-f4f1-4570-9d48-d12e7435cbf2" />
+
+**Exam Predictor — predicted questions with difficulty ratings**
+<img width="1920" height="1080" alt="Exam Predictor — predicted questions with difficulty ratings" src="https://github.com/user-attachments/assets/0f5878c5-0608-4edf-85d8-f6c032c3f461" />
+
 ## What it does
 
 - Upload a PDF or DOCX (one at a time)
